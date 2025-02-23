@@ -1,0 +1,103 @@
+clc
+clear all
+% Objective Function
+%  max z=2x1+3x2
+% Constraints
+%  2x1+x2<=5
+%  x1-x2<=1
+%  x2<=2
+%  x1,x2>=0
+
+%Phase 1 : Input Parameters
+C=[2 3];
+A=[2 1;1 -1;0 1];
+B=[5;1;2];
+
+%Phase 2 : Graph Plot
+x1=0:0.5:max(B);
+x21=(B(1,1)-(A(1,1)*x1))/A(1,2);
+x22=(B(2,1)-(A(2,1)*x1))/A(2,2);
+x23=(B(3,1)-(A(3,1)*x1))/A(3,2);
+
+x21(x21<0)=NaN;
+x22(x22<0)=NaN;
+x23(x23<0)=NaN;
+
+plot(x1,x21,"r",x1,x22,"g",x1,x23,"b")
+title("Graphical Method")
+xlabel("Value of x1")
+ylabel("Value of x2")
+legend('2x1 + x2 = 5','x1 - x2 = 1', 'x2 = 2')
+grid("on")
+
+%Phase 3 : Corner points on axis
+cor_pts=[0 0];
+for i=1:size(A,1)
+    if A(i,1)~=0
+        x1_int=B(i)/A(i,1);
+        if x1_int>=0
+            cor_pts=[cor_pts; x1_int 0];
+        end
+    end
+end
+
+for i=1:size(A,1)
+    if A(i,2)~=0
+        x2_int=B(i)/A(i,2);
+        if x2_int>=0
+            cor_pts=[cor_pts;0 x2_int];
+        end
+    end
+end
+
+%Phase 4 : Intersection points of Constraints
+for i=1:size(A,1)
+    for j=i+1:size(A,1)
+        A1=A([i,j],:);
+        B1=B([i,j]);
+        if det(A1)~=0
+            X=A1\B1;    % X=A1^(-1)B1 or X=B1/A1
+            if X>=0
+                cor_pts=[cor_pts;X'];
+            end
+        end
+    end
+end
+
+%cor_pts contains all the possible corner points.(not only the feasible
+%corner points)
+
+%Phase 5 : find Feasible points
+feas_pts=[];
+for i=1:size (cor_pts,1)
+   if(A*cor_pts(i,:)'<=B)
+       feas_pts=[feas_pts;cor_pts(i,:)];
+   end
+end
+feas_pts=unique(feas_pts,'rows');
+
+% for i=1:size (cor_pts,1)
+%     const1(i)=A(1,1)*cor_pts(i,1)+A(1,2)*cor_pts(i,2)-B(1);
+%     const2(i)=A(2,1)*cor_pts(i,1)+A(2,2)*cor_pts(i,2)-B(2);
+%     const3(i)=A(3,1)*cor_pts(i,1)+A(3,2)*cor_pts(i,2)-B(3);
+%     s1=find(const1>0);
+%     s2=find(const2>0);
+%     s3=find(const3>0);
+% end
+% s=unique([s1 , s2, s3]);
+% cor_pts(s,:)=[];
+% feas_pts=cor_pts;
+
+%Phase 6 : Shade feasible region
+k=convhull(feas_pts(:,1),feas_pts(:,2));
+ fill(feas_pts(k,1),feas_pts(k,2),'r');
+
+
+%Phase 7 : Find optimal solution/objective value
+Z=feas_pts*C';
+[optimal_value index]=max(Z);
+X1=feas_pts(index,1);
+X2=feas_pts(index,2);
+
+%Phase 8 : Display Result
+fprintf('obj value of z is %f at (%f,%f)\n',optimal_value,X1,X2)

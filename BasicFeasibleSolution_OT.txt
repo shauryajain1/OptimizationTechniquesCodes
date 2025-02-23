@@ -1,0 +1,60 @@
+clear all %clears command window
+clc %clears workspace
+
+%objective function
+% max z= 2x1+3x2+4x3+7x4
+%Constraints
+% 2x1+3x2-x3+4x4=8
+% x1+2x2+6x3-7x4=-3
+%x1,x2,x3,x4>0
+
+%Phase 1 : Input Parameters
+A=[2 3 -1 4;1 2 6 -7];
+b=[8;-3];
+C=[2 3 4 7];
+n= size(A,2);
+m= size(A,1);
+% 
+% p=nchoosek(n,m);
+% q=nchoosek(1:n,m);
+% sol=[];
+% if (n>=m)
+%     for i=1:p
+%         y=zeros(n,1);
+%         s=q(i,:);
+%         t=A(:,s);
+%         x=inv(t)*b;
+%         if x>=0
+%             y(s)=x;
+%             sol=[sol y];
+%         end
+%     end
+% else
+%     fprintf("not possible");
+% end
+% z=C*sol;
+% maxima=max(z)
+
+if (n>=m)
+    ncm=nchoosek(n,m);
+    p=nchoosek(1:n,m);
+    sol=[];
+    for i=1:ncm
+        y=zeros(n,1);
+        t=A(:,p(i,:));
+        if det(t)~=0
+            x=inv(t)*b;
+        end
+        if x>=0
+            y(p(i,:))=x;
+            sol=[sol y];
+        end
+    end
+else
+    fprintf("No solution can be obtained by BFS because number of variables are less than constraints");
+end
+z=C*sol; % z is basic feasible solution
+[maxima index]=max(z); % this is optimal solution index will define the number of col where our sol lies
+opt_sol=sol(:,index);    %optimal solution this is column-wise
+opt=[opt_sol' maxima];
+array2table(opt,'VariableNames',{'x1','x2','x3','x4','z'})
